@@ -2,6 +2,7 @@ import pandas as pd
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from sklearn.manifold import TSNE
+from sklearn.decomposition import TruncatedSVD
 
 
 def perform_pca_analysis(df, features_columns, dominant_emotions, scale=False):
@@ -75,4 +76,30 @@ def perform_tsne_analysis(df, features_columns, dominant_emotions, perplexity=30
         'df': tsne_df,
         'variance_ratio': None,  # t-SNE non ha varianza spiegata
         'components': None  # t-SNE non ha vettori di caricamento lineari
+    }
+
+def perform_svd_analysis(df, features_columns, dominant_emotions, n_iter=7):
+    """
+    Esegue TruncatedSVD sui dati.
+    Nota: SVD lavora bene sui dati grezzi (senza sottrarre la media),
+    quindi cattura sia la varianza che l'intensità (magnitudo) dei vettori.
+    """
+    X = df[features_columns].fillna(0)
+
+    # SVD standard (senza scaling/centramento preventivo, altrimenti diventa PCA)
+    svd = TruncatedSVD(n_components=2, n_iter=n_iter, random_state=42)
+    components_transformed = svd.fit_transform(X)
+
+    # Creiamo il DataFrame
+    # Usiamo i nomi 'PC1' e 'PC2' per compatibilità con la funzione di visualizzazione esistente
+    svd_df = pd.DataFrame(data=components_transformed, columns=['PC1', 'PC2'])
+    svd_df['Emoji'] = X.index
+    svd_df['Emozione Dominante'] = dominant_emotions.values
+
+    return {
+        'df': svd_df,
+        'variance_ratio': svd.explained_variance_ratio_,
+        'components': svd.components_,
+        'pca_object': svd,  # Passiamo l'oggetto SVD
+        'explained_variance': svd.explained_variance_
     }
