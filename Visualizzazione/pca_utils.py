@@ -5,37 +5,27 @@ from sklearn.manifold import TSNE
 from sklearn.decomposition import TruncatedSVD
 
 
-def perform_pca_analysis(df, features_columns, dominant_emotions, scale=False):
+def perform_pca_analysis(df, features_columns, dominant_emotions, scale=False, n_components=2):
     """
-    Esegue la PCA sui dati forniti.
-
-    Args:
-        df (pd.DataFrame): Il dataframe originale.
-        features_columns (list): Le colonne su cui fare PCA.
-        dominant_emotions (pd.Series): La serie con l'emozione dominante per ogni riga (per colorare).
-        scale (bool): Se True, applica StandardScaler prima della PCA.
-
-    Returns:
-        dict: Contiene il df risultante, variance_ratio, components e l'oggetto pca.
+    Esegue la PCA (supporta 2D o 3D).
     """
-
     X = df[features_columns].fillna(0)
 
-    # 2. Scaling (opzionale)
     if scale:
         scaler = StandardScaler()
         X_processed = scaler.fit_transform(X)
     else:
         X_processed = X
 
-    # 3. PCA
-    pca = PCA(n_components=2)
+    # PCA dinamica (2 o 3 componenti)
+    pca = PCA(n_components=n_components)
     principalComponents = pca.fit_transform(X_processed)
 
-    # 4. Creazione DF risultati
-    pca_df = pd.DataFrame(data=principalComponents, columns=['PC1', 'PC2'])
+    # Nomi colonne dinamici (PC1, PC2, PC3...)
+    cols = [f'PC{i + 1}' for i in range(n_components)]
+
+    pca_df = pd.DataFrame(data=principalComponents, columns=cols)
     pca_df['Emoji'] = X.index
-    # Assicuriamo che l'indice corrisponda per assegnare l'emozione corretta
     pca_df['Emozione Dominante'] = dominant_emotions.values
 
     return {

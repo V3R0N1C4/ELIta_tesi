@@ -115,3 +115,57 @@ def plot_pca_emotions(pca_data, colors_dict, title, plot_loadings=False, feature
     )
 
     return fig
+
+
+def plot_pca_3d(pca_data, colors_dict, title):
+    """
+    Crea un grafico interattivo 3D (PC1, PC2, PC3).
+    """
+    df = pca_data['df']
+    var_ratio = pca_data['variance_ratio']
+
+    # Controlliamo se abbiamo almeno 3 componenti
+    if 'PC3' not in df.columns:
+        raise ValueError("Per il grafico 3D devi eseguire la PCA con n_components=3")
+
+    fig = go.Figure()
+
+    # Iteriamo per ogni emozione per assegnare i colori
+    for emotion, color in colors_dict.items():
+        emotion_data = df[df['Emozione Dominante'] == emotion]
+        if emotion_data.empty:
+            continue
+
+        fig.add_trace(
+            go.Scatter3d(
+                x=emotion_data['PC1'],
+                y=emotion_data['PC2'],
+                z=emotion_data['PC3'],
+                mode='markers',  # Usa 'text+markers' se vuoi vedere anche le emoji (può essere pesante)
+                marker=dict(
+                    size=5,
+                    color=color,
+                    opacity=0.8,
+                    line=dict(width=0.5, color='white')  # Bordo sottile per visibilità
+                ),
+                text=emotion_data['Emoji'],  # Mostra l'emoji quando passi col mouse
+                name=emotion,
+                hovertemplate=f'<b>{emotion}</b><br>Emoji: %{{text}}<br>X: %{{x:.2f}}<br>Y: %{{y:.2f}}<br>Z: %{{z:.2f}}<extra></extra>'
+            )
+        )
+
+    # Layout Assi
+    fig.update_layout(
+        title=title,
+        height=700,  # Più alto per godersi il 3D
+        scene=dict(
+            xaxis_title=f"PC1 ({var_ratio[0]:.2%} var)",
+            yaxis_title=f"PC2 ({var_ratio[1]:.2%} var)",
+            zaxis_title=f"PC3 ({var_ratio[2]:.2%} var)",
+            bgcolor='white'
+        ),
+        margin=dict(l=0, r=0, b=0, t=50),  # Riduci margini
+        legend=dict(x=0, y=1)
+    )
+
+    return fig
