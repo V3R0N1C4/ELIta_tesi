@@ -82,8 +82,22 @@ def plot_pca_emotions(pca_data, colors_dict, title, plot_loadings=False, feature
             )
 
     # Layout Assi
-    fig.update_xaxes(title_text=f"PC1 ({var_ratio[0]:.2%} var)", showgrid=True, gridcolor='lightgray')
-    fig.update_yaxes(title_text=f"PC2 ({var_ratio[1]:.2%} var)", showgrid=True, gridcolor='lightgray')
+    if var_ratio is not None:
+        # Etichette per PCA (con varianza)
+        x_title = f"PC1 ({var_ratio[0]:.2%} var)"
+        y_title = f"PC2 ({var_ratio[1]:.2%} var)"
+    else:
+        # Etichette generiche per t-SNE
+        x_title = "Dimensione 1 (t-SNE)"
+        y_title = "Dimensione 2 (t-SNE)"
+
+    fig.update_xaxes(title_text=x_title, showgrid=True, gridcolor='lightgray')
+    fig.update_yaxes(title_text=y_title, showgrid=True, gridcolor='lightgray')
+
+    # Rimuovi i tick (numeri) dagli assi per t-SNE, perché non hanno significato metrico
+    if var_ratio is None:
+        fig.update_xaxes(showticklabels=False)
+        fig.update_yaxes(showticklabels=False)
 
     # Layout Generale
     fig.update_layout(

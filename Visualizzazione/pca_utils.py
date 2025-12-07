@@ -1,6 +1,7 @@
 import pandas as pd
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
+from sklearn.manifold import TSNE
 
 
 def perform_pca_analysis(df, features_columns, dominant_emotions, scale=False):
@@ -42,4 +43,36 @@ def perform_pca_analysis(df, features_columns, dominant_emotions, scale=False):
         'components': pca.components_,
         'pca_object': pca,
         'explained_variance': pca.explained_variance_
+    }
+
+def perform_tsne_analysis(df, features_columns, dominant_emotions, perplexity=30, scale=False):
+    """
+    Esegue t-SNE sui dati forniti.
+    Args:
+        perplexity (int): Parametro cruciale t-SNE.
+                          5-30 per dettagli locali, 30-50 per struttura globale.
+    """
+    X = df[features_columns].fillna(0)
+
+    # Scaling (consigliato per t-SNE)
+    if scale:
+        scaler = StandardScaler()
+        X_processed = scaler.fit_transform(X)
+    else:
+        X_processed = X
+
+    # Esecuzione t-SNE
+    # init='pca' rende il risultato più stabile
+    tsne = TSNE(n_components=2, perplexity=perplexity, random_state=42, init='pca', learning_rate='auto')
+    embedded = tsne.fit_transform(X_processed)
+
+    # Creazione DF (Usiamo nomi colonne compatibili con il visualizer esistente)
+    tsne_df = pd.DataFrame(data=embedded, columns=['PC1', 'PC2'])
+    tsne_df['Emoji'] = X.index
+    tsne_df['Emozione Dominante'] = dominant_emotions.values
+
+    return {
+        'df': tsne_df,
+        'variance_ratio': None,  # t-SNE non ha varianza spiegata
+        'components': None  # t-SNE non ha vettori di caricamento lineari
     }
