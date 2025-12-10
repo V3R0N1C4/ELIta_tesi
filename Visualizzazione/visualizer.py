@@ -73,8 +73,8 @@ def plot_pca_emotions(pca_data, colors_dict, title, plot_loadings=False, feature
                 arrowhead=2,
                 arrowsize=1,
                 arrowwidth=2,
-                arrowcolor="#555",
-                font=dict(color="#555", size=12),
+                arrowcolor="#333", # Grigio scuro per le frecce
+                font=dict(color="black", size=12), # Testo nero
                 ax=0, ay=0,
                 row=1, col=2
             )
@@ -87,8 +87,8 @@ def plot_pca_emotions(pca_data, colors_dict, title, plot_loadings=False, feature
         x_title = "Dimensione 1 (t-SNE)"
         y_title = "Dimensione 2 (t-SNE)"
 
-    fig.update_xaxes(title_text=x_title, showgrid=True, gridcolor='lightgray')
-    fig.update_yaxes(title_text=y_title, showgrid=True, gridcolor='lightgray')
+    fig.update_xaxes(title_text=x_title, showgrid=True, gridcolor='lightgray', title_font=dict(color='black'), tickfont=dict(color='black'))
+    fig.update_yaxes(title_text=y_title, showgrid=True, gridcolor='lightgray', title_font=dict(color='black'), tickfont=dict(color='black'))
 
     if var_ratio is None:
         fig.update_xaxes(showticklabels=False)
@@ -97,12 +97,13 @@ def plot_pca_emotions(pca_data, colors_dict, title, plot_loadings=False, feature
     fig.update_layout(
         title_text=title,
         title_font_size=16,
+        font=dict(color='black'), 
         plot_bgcolor='white',
         paper_bgcolor='white',
         height=600,
         legend=dict(
-            title=dict(text='Emozione Dominante', font=dict(size=14)),
-            font=dict(size=12),
+            title=dict(text='Emozione Dominante', font=dict(size=14, color='black')),
+            font=dict(size=12, color='black'),
             x=1.02, y=0.5,
             xanchor='left', yanchor='middle'
         )
@@ -155,7 +156,7 @@ def plot_pca_single(pca_data, colors_dict, title, plot_loadings=False, feature_n
                 arrowsize=1,
                 arrowwidth=2,
                 arrowcolor="#333",
-                font=dict(color="#333", size=14, family="Arial Black"),
+                font=dict(color="black", size=14, family="Arial Black"), # Testo nero
                 ax=0, ay=0
             )
 
@@ -166,8 +167,8 @@ def plot_pca_single(pca_data, colors_dict, title, plot_loadings=False, feature_n
         x_title = "Dimensione 1 (t-SNE)"
         y_title = "Dimensione 2 (t-SNE)"
 
-    fig.update_xaxes(title_text=x_title, showgrid=True, gridcolor='lightgray')
-    fig.update_yaxes(title_text=y_title, showgrid=True, gridcolor='lightgray')
+    fig.update_xaxes(title_text=x_title, showgrid=True, gridcolor='lightgray', title_font=dict(color='black'), tickfont=dict(color='black'))
+    fig.update_yaxes(title_text=y_title, showgrid=True, gridcolor='lightgray', title_font=dict(color='black'), tickfont=dict(color='black'))
 
     if var_ratio is None:
         fig.update_xaxes(showticklabels=False)
@@ -176,12 +177,13 @@ def plot_pca_single(pca_data, colors_dict, title, plot_loadings=False, feature_n
     fig.update_layout(
         title_text=title,
         title_font_size=16,
+        font=dict(color='black'), 
         plot_bgcolor='white',
         paper_bgcolor='white',
         height=700,
         legend=dict(
-            title=dict(text='Emozione Dominante', font=dict(size=14)),
-            font=dict(size=12)
+            title=dict(text='Emozione Dominante', font=dict(size=14, color='black')),
+            font=dict(size=12, color='black')
         )
     )
 
@@ -223,15 +225,19 @@ def plot_pca_3d(pca_data, colors_dict, title):
 
     fig.update_layout(
         title=title,
+        font=dict(color='black'), 
         height=700,
         scene=dict(
             xaxis_title=f"PC1 ({var_ratio[0]:.2%} var)",
             yaxis_title=f"PC2 ({var_ratio[1]:.2%} var)",
             zaxis_title=f"PC3 ({var_ratio[2]:.2%} var)",
-            bgcolor='white'
+            bgcolor='white',
+            xaxis=dict(title_font=dict(color='black'), tickfont=dict(color='black')),
+            yaxis=dict(title_font=dict(color='black'), tickfont=dict(color='black')),
+            zaxis=dict(title_font=dict(color='black'), tickfont=dict(color='black')),
         ),
         margin=dict(l=0, r=0, b=0, t=50),
-        legend=dict(x=0, y=1)
+        legend=dict(x=0, y=1, font=dict(color='black'))
     )
     return fig
 
@@ -299,13 +305,15 @@ def plot_soglie_affiancate(df, emozione_target):
 
     fig.update_layout(
         title_text=f"Analisi Sensibilità Soglia: <b>{emozione_target.capitalize()}</b>",
+        font=dict(color='black'), 
         height=500,
         width=1200,
-        plot_bgcolor='white'
+        plot_bgcolor='white',
+        paper_bgcolor='white'
     )
 
-    fig.update_xaxes(showline=True, linewidth=1, linecolor='lightgray', mirror=True)
-    fig.update_yaxes(showline=True, linewidth=1, linecolor='lightgray', mirror=True, showticklabels=False)
+    fig.update_xaxes(showline=True, linewidth=1, linecolor='lightgray', mirror=True, title_font=dict(color='black'), tickfont=dict(color='black'))
+    fig.update_yaxes(showline=True, linewidth=1, linecolor='lightgray', mirror=True, showticklabels=False, title_font=dict(color='black'), tickfont=dict(color='black'))
 
     return fig
 
@@ -335,7 +343,8 @@ def plot_complesse_confronto(df):
             fig.add_annotation(
                 text="Dati insufficienti (<3 parole)",
                 xref=f"x{i + 1}", yref=f"y{i + 1}",
-                showarrow=False, row=1, col=i + 1
+                showarrow=False, row=1, col=i + 1,
+                font=dict(color="black") # Testo annotazione nero
             )
             continue
 
@@ -373,13 +382,15 @@ def plot_complesse_confronto(df):
 
     fig.update_layout(
         title_text="Analisi Parole Ambigue: Confronto Soglie (0.5 vs 0.75)",
+        font=dict(color='black'), 
         height=500,
         width=1100,
-        plot_bgcolor='white'
+        plot_bgcolor='white',
+        paper_bgcolor='white'
     )
 
-    fig.update_xaxes(showline=True, linewidth=1, linecolor='lightgray', mirror=True)
-    fig.update_yaxes(showline=True, linewidth=1, linecolor='lightgray', mirror=True, showticklabels=False)
+    fig.update_xaxes(showline=True, linewidth=1, linecolor='lightgray', mirror=True, title_font=dict(color='black'), tickfont=dict(color='black'))
+    fig.update_yaxes(showline=True, linewidth=1, linecolor='lightgray', mirror=True, showticklabels=False, title_font=dict(color='black'), tickfont=dict(color='black'))
 
     return fig
 
@@ -447,13 +458,15 @@ def plot_svd_soglie_affiancate(df, emozione_target):
 
     fig.update_layout(
         title_text=f"Analisi SVD (Intensità): <b>{emozione_target.capitalize()}</b>",
+        font=dict(color='black'), 
         height=500,
         width=1200,
-        plot_bgcolor='white'
+        plot_bgcolor='white',
+        paper_bgcolor='white'
     )
 
     # Rimuoviamo i tick labels perché SVD produce coordinate di intensità non standardizzate
-    fig.update_xaxes(showline=True, linewidth=1, linecolor='lightgray', mirror=True, showticklabels=False)
-    fig.update_yaxes(showline=True, linewidth=1, linecolor='lightgray', mirror=True, showticklabels=False)
+    fig.update_xaxes(showline=True, linewidth=1, linecolor='lightgray', mirror=True, showticklabels=False, title_font=dict(color='black'), tickfont=dict(color='black'))
+    fig.update_yaxes(showline=True, linewidth=1, linecolor='lightgray', mirror=True, showticklabels=False, title_font=dict(color='black'), tickfont=dict(color='black'))
 
     return fig
