@@ -93,3 +93,13 @@ def perform_svd_analysis(df, features_columns, dominant_emotions, n_iter=7):
         'pca_object': svd,  # Passiamo l'oggetto SVD
         'explained_variance': svd.explained_variance_
     }
+
+def trova_parole_complesse(df, soglia=0.4):
+    """
+    Identifica le parole che hanno un punteggio superiore alla soglia
+    in almeno 2 emozioni diverse.
+    """
+    mask = df > soglia
+    counts = mask.sum(axis=1)
+    complex_words = df[counts >= 2].copy()
+    return complex_words

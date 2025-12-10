@@ -3,11 +3,10 @@ from plotly.subplots import make_subplots
 import numpy as np
 
 try:
-    from .pca_utils import perform_pca_analysis
+    from .pca_utils import perform_pca_analysis, trova_parole_complesse
     from .emotion_config import EMOTION_COLORS, BASIC_EMOTIONS
 except ImportError:
-    # Fallback se eseguito fuori dal pacchetto
-    from pca_utils import perform_pca_analysis
+    from pca_utils import perform_pca_analysis, trova_parole_complesse
     from emotion_config import EMOTION_COLORS, BASIC_EMOTIONS
 
 def plot_pca_emotions(pca_data, colors_dict, title, plot_loadings=False, feature_names=None):
@@ -310,3 +309,76 @@ def plot_soglie_affiancate(df, emozione_target):
 
     return fig
 
+
+def plot_complesse_confronto(df):
+    """
+    Genera un grafico affiancato (0.5 vs 0.75) per le parole ambigue.
+    """
+    soglie = [0.5, 0.75]
+
+    fig = make_subplots(
+        rows=1, cols=2,
+        subplot_titles=[f"Parole Ambigue (Soglia > {s})" for s in soglie],
+        horizontal_spacing=0.12
+    )
+
+    show_legend_tracker = set()
+
+    for i, soglia in enumerate(soglie):
+        # 1. Usa la funzione importata da pca_utils
+        complesse_df = trova_parole_complesse(df, soglia=soglia)
+        n_parole = len(complesse_df)
+
+        fig.layout.annotations[i].text = f"Soglia > {soglia} (n={n_parole})"
+
+        if n_parole < 3:
+            fig.add_annotation(
+                text="Dati insufficienti (<3 parole)",
+                xref=f"x{i + 1}", yref=f"y{i + 1}",
+                showarrow=False, row=1, col=i + 1
+            )
+            continue
+
+        # 2. Calcolo PCA
+        dominant = complesse_df[BASIC_EMOTIONS].idxmax(axis=1)
+        pca_res = perform_pca_analysis(complesse_df, BASIC_EMOTIONS, dominant, scale=True)
+        df_pca = pca_res['df']
+
+        # 3. Plot
+        for emozione in df_pca['Emozione Dominante'].unique():
+            df_emo = df_pca[df_pca['Emozione Dominante'] == emozione]
+
+            show_leg = False
+            if emozione not in show_legend_tracker:
+                show_leg = True
+                show_legend_tracker.add(emozione)
+
+            fig.add_trace(
+                go.Scatter(
+                    x=df_emo['PC1'], y=df_emo['PC2'],
+                    mode='markers',
+                    marker=dict(
+                        color=EMOTION_COLORS.get(emozione, '#888'),
+                        size=7, opacity=0.7,
+                        line=dict(width=0.5, color='white')
+                    ),
+                    name=emozione,
+                    text=df_emo['Emoji'],
+                    legendgroup=emozione,
+                    showlegend=show_leg,
+                    hovertemplate=f'<b>{emozione}</b><br>Parola: %{{text}}<br>PC1: %{{x:.2f}}<br>PC2: %{{y:.2f}}<extra></extra>'
+                ),
+                row=1, col=i + 1
+            )
+
+    fig.update_layout(
+        title_text="Analisi Parole Ambigue: Confronto Soglie (0.5 vs 0.75)",
+        height=500,
+        width=1100,
+        plot_bgcolor='white'
+    )
+
+    fig.update_xaxes(showline=True, linewidth=1, linecolor='lightgray', mirror=True)
+    fig.update_yaxes(showline=True, linewidth=1, linecolor='lightgray', mirror=True, showticklabels=False)
+
+    return fig
