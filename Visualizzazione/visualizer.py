@@ -3,10 +3,10 @@ from plotly.subplots import make_subplots
 import numpy as np
 
 try:
-    from .pca_utils import perform_pca_analysis, trova_parole_complesse
+    from .pca_utils import perform_pca_analysis, perform_svd_analysis, trova_parole_complesse
     from .emotion_config import EMOTION_COLORS, BASIC_EMOTIONS
 except ImportError:
-    from pca_utils import perform_pca_analysis, trova_parole_complesse
+    from pca_utils import  perform_pca_analysis, perform_svd_analysis, trova_parole_complesse
     from emotion_config import EMOTION_COLORS, BASIC_EMOTIONS
 
 def plot_pca_emotions(pca_data, colors_dict, title, plot_loadings=False, feature_names=None):
@@ -379,6 +379,81 @@ def plot_complesse_confronto(df):
     )
 
     fig.update_xaxes(showline=True, linewidth=1, linecolor='lightgray', mirror=True)
+    fig.update_yaxes(showline=True, linewidth=1, linecolor='lightgray', mirror=True, showticklabels=False)
+
+    return fig
+
+
+def plot_svd_soglie_affiancate(df, emozione_target):
+    """
+    Genera 3 grafici affiancati per le soglie 0.25, 0.50, 0.75
+    utilizzando TruncatedSVD per una specifica emozione target.
+    """
+    soglie = [0.25, 0.50, 0.75]
+    titles = [f"Soglia > {s}" for s in soglie]
+
+    fig = make_subplots(
+        rows=1, cols=3,
+        subplot_titles=titles,
+        horizontal_spacing=0.1
+    )
+
+    show_legend_tracker = set()
+
+    for i, soglia in enumerate(soglie):
+        # 1. Filtro
+        subset = df[df[emozione_target] > soglia].copy()
+        n_parole = len(subset)
+
+        fig.layout.annotations[i].text = f"Soglia > {soglia} (n={n_parole})"
+
+        if n_parole < 3:
+            continue
+
+        # 2. Calcolo SVD (Invece di PCA)
+        dominant = subset[BASIC_EMOTIONS].idxmax(axis=1)
+
+        # SVD lavora sui dati grezzi, quindi preserva l'intensità (0 è 0)
+        svd_res = perform_svd_analysis(subset, BASIC_EMOTIONS, dominant)
+        df_svd = svd_res['df']
+
+        # 3. Plot
+        for emozione in df_svd['Emozione Dominante'].unique():
+            df_emo = df_svd[df_svd['Emozione Dominante'] == emozione]
+
+            show_leg = False
+            if emozione not in show_legend_tracker:
+                show_leg = True
+                show_legend_tracker.add(emozione)
+
+            fig.add_trace(
+                go.Scatter(
+                    x=df_emo['PC1'], y=df_emo['PC2'],
+                    mode='markers',
+                    marker=dict(
+                        color=EMOTION_COLORS.get(emozione, '#888'),
+                        size=6, opacity=0.7,
+                        symbol='diamond',  # Usiamo un rombo per distinguerlo a colpo d'occhio dalla PCA
+                        line=dict(width=0.5, color='white')
+                    ),
+                    name=emozione,
+                    text=df_emo['Emoji'],  # Parola
+                    legendgroup=emozione,
+                    showlegend=show_leg,
+                    hovertemplate=f'<b>{emozione}</b><br>Parola: %{{text}}<br>SVD1: %{{x:.2f}}<br>SVD2: %{{y:.2f}}<extra></extra>'
+                ),
+                row=1, col=i + 1
+            )
+
+    fig.update_layout(
+        title_text=f"Analisi SVD (Intensità): <b>{emozione_target.capitalize()}</b>",
+        height=500,
+        width=1200,
+        plot_bgcolor='white'
+    )
+
+    # Rimuoviamo i tick labels perché SVD produce coordinate di intensità non standardizzate
+    fig.update_xaxes(showline=True, linewidth=1, linecolor='lightgray', mirror=True, showticklabels=False)
     fig.update_yaxes(showline=True, linewidth=1, linecolor='lightgray', mirror=True, showticklabels=False)
 
     return fig
