@@ -35,11 +35,22 @@ def plot_semantic_structure(df_recalc, df_centroids, target_emotion, top_n=10):
         G.add_node(label, pos=pos_2d[i], type=types[i])
 
     # Aggiungiamo archi se la similarità coseno è > 0.95 (regola molto stretta)
+    # --- NUOVA LOGICA PER GLI ARCHI ---
     sim_matrix = cosine_similarity(combined_vectors)
     for i in range(len(labels)):
         for j in range(i + 1, len(labels)):
-            if sim_matrix[i, j] > 0.95:
-                G.add_edge(labels[i], labels[j], weight=sim_matrix[i, j])
+            sim = sim_matrix[i, j]
+
+            # Regola 1: Se uno dei due nodi è il CENTROIDE, usiamo una soglia più bassa
+            # per mostrare il legame con le sue parole
+            if labels[i].startswith("CENTROID") or labels[j].startswith("CENTROID"):
+                if sim > 0.85:  # Soglia più permissiva per il centroide
+                    G.add_edge(labels[i], labels[j], weight=sim)
+
+            # Regola 2: Per le connessioni tra parole blu, teniamo la soglia alta
+            else:
+                if sim > 0.95:
+                    G.add_edge(labels[i], labels[j], weight=sim)
 
     plt.figure(figsize=(12, 8))
     pos = nx.get_node_attributes(G, 'pos')
