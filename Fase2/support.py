@@ -26,7 +26,7 @@ def plot_semantic_structure(df_recalc, df_centroids, target_emotion, top_n=10):
 
     # 2. Riduzione dimensionale t-SNE
     # Usiamo una perplexity bassa perché abbiamo pochi punti
-    tsne = TSNE(n_components=2, perplexity=min(5, len(labels) - 1), random_state=42, init='pca')
+    tsne = TSNE(n_components=2, perplexity=min(10, len(labels) - 1), random_state=42, init='pca')
     pos_2d = tsne.fit_transform(combined_vectors)
 
     # --- GRAFICO 1: MAPPA SEMANTICA (NETWORK) ---
