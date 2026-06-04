@@ -188,7 +188,6 @@ def plot_pca_single(pca_data, colors_dict, title, plot_loadings=False, feature_n
 
     return fig
 
-
 def plot_pca_3d(pca_data, colors_dict, title):
     """
     Crea un grafico interattivo 3D (PC1, PC2, PC3) con stile pulito (sfondo bianco, testo nero).
@@ -339,7 +338,6 @@ def plot_soglie_affiancate(df, emozione_target):
 
     return fig
 
-
 def plot_complesse_confronto(df):
     """
     Genera un grafico affiancato (0.5 vs 0.75) per le parole ambigue.
@@ -415,7 +413,6 @@ def plot_complesse_confronto(df):
     fig.update_yaxes(showline=True, linewidth=1, linecolor='lightgray', mirror=True, showticklabels=False, title_font=dict(color='black'), tickfont=dict(color='black'))
 
     return fig
-
 
 def plot_svd_soglie_affiancate(df, emozione_target):
     """
