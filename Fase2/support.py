@@ -1,12 +1,9 @@
-import pandas as pd
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.manifold import TSNE
 from sklearn.metrics.pairwise import cosine_similarity
-from matplotlib.patches import Patch
-
 
 def plot_semantic_structure(df_recalc, df_centroids, target_emotion, top_n=10):
     """
@@ -44,12 +41,12 @@ def plot_semantic_structure(df_recalc, df_centroids, target_emotion, top_n=10):
             # Regola 1: Se uno dei due nodi è il CENTROIDE, usiamo una soglia più bassa
             # per mostrare il legame con le sue parole
             if labels[i].startswith("CENTROID") or labels[j].startswith("CENTROID"):
-                if sim > 0.85:  # Soglia più permissiva per il centroide
+                if sim > 0.95:  # Soglia più permissiva per il centroide
                     G.add_edge(labels[i], labels[j], weight=sim)
 
             # Regola 2: Per le connessioni tra parole blu, teniamo la soglia alta
             else:
-                if sim > 0.95:
+                if sim > 0.98:
                     G.add_edge(labels[i], labels[j], weight=sim)
 
     plt.figure(figsize=(12, 8))
@@ -74,6 +71,3 @@ def plot_semantic_structure(df_recalc, df_centroids, target_emotion, top_n=10):
     plt.title(f"Scatter Plot t-SNE: Vicinanza al Centroide '{target_emotion.capitalize()}'")
     plt.axis('off')
     plt.show()
-
-# ESEMPIO DI UTILIZZO:
-# plot_semantic_structure(df_alpha_05, df_centroids, 'gioia')
