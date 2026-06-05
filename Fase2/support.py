@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.manifold import TSNE
 from sklearn.metrics.pairwise import cosine_similarity
+from pathlib import Path
 
 def plot_semantic_structure(df_recalc, df_centroids, target_emotion, top_n=10):
     """
@@ -71,3 +72,20 @@ def plot_semantic_structure(df_recalc, df_centroids, target_emotion, top_n=10):
     plt.title(f"Scatter Plot t-SNE: Vicinanza al Centroide '{target_emotion.capitalize()}'")
     plt.axis('off')
     plt.show()
+
+
+def save_alpha_csvs(alpha_dataframes, output_dir=".", base_name="ELIta_ricalcolata_alpha", encoding="utf-8-sig"):
+    """
+    Salva un CSV per ogni coppia {alpha: dataframe}.
+    """
+    out = Path(output_dir)
+    out.mkdir(parents=True, exist_ok=True)
+
+    saved_files = []
+    for alpha, df in alpha_dataframes.items():
+        alpha_tag = str(alpha).replace(".", "_")
+        csv_path = out / f"{base_name}_{alpha_tag}.csv"
+        df.to_csv(csv_path, encoding=encoding)
+        saved_files.append(str(csv_path))
+
+    return saved_files
