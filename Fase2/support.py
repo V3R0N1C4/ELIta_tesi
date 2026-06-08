@@ -59,20 +59,21 @@ def plot_semantic_structure(df_recalc, df_centroids, target_emotion, top_n=10):
     plt.title(f"Mappa Semantica: Struttura di '{target_emotion.capitalize()}' (Ricalcolata)")
     plt.show()
 
-    # --- GRAFICO 2: SCATTER PLOT (t-SNE) ---
+    # --- GRAFICO 2: SCATTER PLOT (t-SNE) con sfondo BIANCO ---
     plt.figure(figsize=(10, 8))
-    sns.set_style("white")
+    ax2 = plt.gca()
+    ax2.set_facecolor('white')
+    plt.gcf().patch.set_facecolor('white')
 
     # Plot dei punti
     for i, label in enumerate(labels):
         color = 'red' if types[i] == "Reference" else '#1f77b4'
         plt.scatter(pos_2d[i, 0], pos_2d[i, 1], c=color, s=150, edgecolors='white')
-        plt.text(pos_2d[i, 0] + 0.1, pos_2d[i, 1] + 0.1, label, fontsize=10)
+        plt.text(pos_2d[i, 0] + 0.1, pos_2d[i, 1] + 0.1, label, fontsize=10, color='black')  # <-- TESTO NERO
 
-    plt.title(f"Scatter Plot t-SNE: Vicinanza al Centroide '{target_emotion.capitalize()}'")
+    plt.title(f"Scatter Plot t-SNE: Vicinanza al Centroide '{target_emotion.capitalize()}'", color='black')
     plt.axis('off')
     plt.show()
-
 
 def save_alpha_csvs(alpha_dataframes, output_dir=".", base_name="ELIta_ricalcolata_alpha", encoding="utf-8-sig"):
     """
