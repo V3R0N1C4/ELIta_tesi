@@ -11,7 +11,7 @@ SEVEN_EMOTIONS = ['gioia', 'tristezza', 'rabbia', 'paura',
                   'disgusto', 'fiducia', 'sorpresa']
 POSITIVE       = {'gioia', 'fiducia', 'sorpresa', 'aspettativa'}
 NEGATIVE       = {'tristezza', 'rabbia', 'paura', 'disgusto'}
-POS_FILTER     = {'ADJ', 'NOUN', 'VERB'}
+POS_FILTER     = {'ADJ', 'NOUN', 'VERB', 'EMOJI'}
 
 EMOTION_COLORS = {
     'gioia':        '#FDD835',
