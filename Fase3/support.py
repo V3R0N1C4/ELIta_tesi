@@ -27,10 +27,6 @@ EMOTION_COLORS = {
 
 # ── Caricamento dati ───────────────────────────────────────────────────────────
 
-def _is_not_emoji(text):
-    return emoji.emoji_count(str(text)) == 0
-
-
 def load_corpus(corpus_csv, tokens_csv):
     """Carica corpus e token con normalizzazione standard (lower/strip)."""
     df_corpus = pd.read_csv(corpus_csv)
@@ -41,11 +37,10 @@ def load_corpus(corpus_csv, tokens_csv):
 
 
 def load_elita_matrix(path, emotions=None):
-    """Carica la matrice ELIta originale: filtra emoji e normalizza l'indice."""
+    """Carica la matrice ELIta originale: normalizza l'indice."""
     if emotions is None:
         emotions = BASIC_EMOTIONS
     df = pd.read_csv(path, index_col=0)
-    df = df[df.index.map(_is_not_emoji)]
     df.index = df.index.astype(str).str.lower().str.strip()
     return df[emotions].fillna(0)
 
