@@ -79,7 +79,7 @@ def perform_svd_analysis(df, features_columns, dominant_emotions, n_iter=7):
     svd = TruncatedSVD(n_components=2, n_iter=n_iter, random_state=42)
     components_transformed = svd.fit_transform(X)
 
-    # Creiamo il DataFrame per SVD
+    # Creazione DataFrame per SVD
     svd_df = pd.DataFrame(data=components_transformed, columns=['PC1', 'PC2'])
     svd_df['Emoji'] = X.index
     svd_df['Emozione Dominante'] = dominant_emotions.values
@@ -88,7 +88,7 @@ def perform_svd_analysis(df, features_columns, dominant_emotions, n_iter=7):
         'df': svd_df,
         'variance_ratio': svd.explained_variance_ratio_,
         'components': svd.components_,
-        'pca_object': svd,  # Passiamo l'oggetto SVD
+        'pca_object': svd,  # passato oggetto SVD
         'explained_variance': svd.explained_variance_
     }
 
