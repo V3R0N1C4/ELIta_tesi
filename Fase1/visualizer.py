@@ -3,10 +3,10 @@ from plotly.subplots import make_subplots
 import numpy as np
 
 try:
-    from .pca_utils import perform_pca_analysis, perform_svd_analysis, trova_parole_complesse
+    from .sklearn_utils import perform_pca_analysis, perform_svd_analysis, trova_parole_complesse
     from .emotion_config import EMOTION_COLORS, BASIC_EMOTIONS
 except ImportError:
-    from pca_utils import  perform_pca_analysis, perform_svd_analysis, trova_parole_complesse
+    from sklearn_utils import  perform_pca_analysis, perform_svd_analysis, trova_parole_complesse
     from emotion_config import EMOTION_COLORS, BASIC_EMOTIONS
 
 def plot_pca_emotions(pca_data, colors_dict, title, plot_loadings=False, feature_names=None):
@@ -120,6 +120,7 @@ def plot_pca_single(pca_data, colors_dict, title, plot_loadings=False, feature_n
 
     fig = go.Figure()
 
+    # Iteriamo sui colori disponibili
     for emotion, color in colors_dict.items():
         emotion_data = df[df['Emozione Dominante'] == emotion]
         if emotion_data.empty:
@@ -144,10 +145,11 @@ def plot_pca_single(pca_data, colors_dict, title, plot_loadings=False, feature_n
         )
 
     if plot_loadings and feature_names:
+        # Scala i loading come biplot: proietta le feature nello stesso spazio dei punti
         loadings = pca_data['components'].T * np.sqrt(pca_data['explained_variance'])
         for i, feature in enumerate(feature_names):
             fig.add_annotation(
-                x=loadings[i, 0] * 3,
+                x=loadings[i, 0] * 3,   # Moltiplica per 3 per rendere i vettori visibili rispetto alla scala dei punti
                 y=loadings[i, 1] * 3,
                 text=feature,
                 showarrow=True,
@@ -159,6 +161,7 @@ def plot_pca_single(pca_data, colors_dict, title, plot_loadings=False, feature_n
                 ax=0, ay=0
             )
 
+    # var_ratio è None solo per t-SNE, dove gli assi non hanno unità interpretabili
     if var_ratio is not None:
         x_title = f"PC1 ({var_ratio[0]:.2%} var)"
         y_title = f"PC2 ({var_ratio[1]:.2%} var)"
@@ -217,8 +220,7 @@ def plot_pca_3d(pca_data, colors_dict, title):
                     size=5,
                     color=color,
                     opacity=0.8,
-                    # Bordo sottile grigio scuro per far risaltare i punti su sfondo bianco
-                    line=dict(width=0.5, color='#444')
+                    line=dict(width=0.5, color='#444')  # Bordo sottile grigio scuro per far risaltare i punti su sfondo bianco
                 ),
                 text=emotion_data['Emoji'],
                 name=emotion,
@@ -230,8 +232,8 @@ def plot_pca_3d(pca_data, colors_dict, title):
     axis_style = dict(
         title_font=dict(color='black'),
         tickfont=dict(color='black'),
-        backgroundcolor='white',  # Colore pareti cubo
-        gridcolor='#E5E5E5',  # Colore griglia (grigio chiaro)
+        backgroundcolor='white',    # Colore pareti cubo
+        gridcolor='#E5E5E5',        # Colore griglia (grigio chiaro)
         showbackground=True,
         zerolinecolor='#E5E5E5'
     )
@@ -240,8 +242,8 @@ def plot_pca_3d(pca_data, colors_dict, title):
     fig.update_layout(
         title=title,
         title_font=dict(size=16, color='black'),
-        paper_bgcolor='white',  # Sfondo esterno al cubo
-        font=dict(color='black'),  # Font generale nero
+        paper_bgcolor='white',      # Sfondo esterno al cubo
+        font=dict(color='black'),   # Font generale nero
         height=700,
 
         # Configurazione della scena 3D
@@ -264,12 +266,11 @@ def plot_pca_3d(pca_data, colors_dict, title):
 
 def plot_soglie_affiancate(df, emozione_target):
     """
-    Genera 3 grafici affiancati per le soglie 0.25, 0.50, 0.75
-    per una specifica emozione target.
+    Genera 3 grafici PCA affiancati per le soglie 0.25, 0.50, 0.75 per una specifica emozione target.
 
     Args:
-        df: DataFrame contenente i dati (es. df_words)
-        emozione_target: stringa (es. 'gioia', 'tristezza')
+        df: DataFrame contenente i dati
+        emozione_target: stringa con il nome dell'emozione da analizzare
     """
     soglie = [0.25, 0.50, 0.75]
     titles = [f"Soglia > {s}" for s in soglie]
@@ -340,7 +341,7 @@ def plot_soglie_affiancate(df, emozione_target):
 
 def plot_complesse_confronto(df):
     """
-    Genera un grafico affiancato (0.5 vs 0.75) per le parole ambigue.
+    Genera un grafico PCA affiancato (0.5 vs 0.75) per le parole ambigue.
     """
     soglie = [0.5, 0.75]
 
@@ -416,8 +417,7 @@ def plot_complesse_confronto(df):
 
 def plot_svd_soglie_affiancate(df, emozione_target):
     """
-    Genera 3 grafici affiancati per le soglie 0.25, 0.50, 0.75
-    utilizzando TruncatedSVD per una specifica emozione target.
+    Genera 3 grafici affiancati per le soglie 0.25, 0.50, 0.75 utilizzando TruncatedSVD per una specifica emozione target.
     """
     soglie = [0.25, 0.50, 0.75]
     titles = [f"Soglia > {s}" for s in soglie]
