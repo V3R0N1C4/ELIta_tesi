@@ -13,11 +13,11 @@ def plot_semantic_structure(df_recalc, df_centroids, target_emotion, top_n=10):
     """
     Genera i due grafici (Network e Scatter) basati sui punteggi ricalcolati.
     """
-    # 1. Selezioniamo le parole più rappresentative per l'emozione target
-    # (Prendiamo le top N parole basandoci sul punteggio ricalcolato)
+    # 1. Seleziona le parole più rappresentative per l'emozione target
+    # (Prende le top N parole basandosi sul punteggio ricalcolato)
     top_words = df_recalc[target_emotion].sort_values(ascending=False).head(top_n * 3).index
 
-    # Prepariamo i dati per il t-SNE: Vettori delle parole + Vettore del Centroide
+    # Prepara i dati per il t-SNE: Vettori delle parole + Vettore del Centroide
     vectors = df_recalc.loc[top_words].values
     centroid_vector = df_centroids.loc[target_emotion].values.reshape(1, -1)
 
@@ -26,7 +26,7 @@ def plot_semantic_structure(df_recalc, df_centroids, target_emotion, top_n=10):
     types = ["Reference"] + ["Word"] * len(top_words)
 
     # 2. Riduzione dimensionale t-SNE
-    # Usiamo una perplexity bassa perché abbiamo pochi punti
+    # perplexity bassa perché abbiamo pochi punti
     tsne = TSNE(n_components=2, perplexity=min(10, len(labels) - 1), random_state=42, init='pca')
     pos_2d = tsne.fit_transform(combined_vectors)
 
@@ -35,19 +35,17 @@ def plot_semantic_structure(df_recalc, df_centroids, target_emotion, top_n=10):
     for i, label in enumerate(labels):
         G.add_node(label, pos=pos_2d[i], type=types[i])
 
-    # Aggiungiamo archi se la similarità coseno è > 0.95 (regola molto stretta)
-    # --- NUOVA LOGICA PER GLI ARCHI ---
     sim_matrix = cosine_similarity(combined_vectors)    # Calcola tutte le similarità coseno tra i nodi.
     for i in range(len(labels)):
         for j in range(i + 1, len(labels)):
             sim = sim_matrix[i, j]
 
-            # Regola 1: Se uno dei due nodi è il CENTROIDE, usiamo una soglia più bassa per mostrare il legame con le sue parole
+            # Regola 1: Se uno dei due nodi è il CENTROIDE, soglia più bassa per mostrare il legame con le sue parole
             if labels[i].startswith("CENTROID") or labels[j].startswith("CENTROID"):
                 if sim > 0.95:  # Soglia più permissiva per il centroide
                     G.add_edge(labels[i], labels[j], weight=sim)
 
-            # Regola 2: Per le connessioni tra parole blu, teniamo la soglia alta
+            # Regola 2: Per le connessioni tra parole blu, soglia alta
             else:
                 if sim > 0.98:
                     G.add_edge(labels[i], labels[j], weight=sim)
@@ -61,7 +59,7 @@ def plot_semantic_structure(df_recalc, df_centroids, target_emotion, top_n=10):
     plt.title(f"Mappa Semantica: Struttura di '{target_emotion.capitalize()}' (Ricalcolata)")
     plt.show()
 
-    # --- GRAFICO 2: SCATTER PLOT (t-SNE) con sfondo BIANCO ---
+    # --- GRAFICO 2: SCATTER PLOT (t-SNE) con sfondo ---
     plt.figure(figsize=(10, 8))
     ax2 = plt.gca()
     ax2.set_facecolor('white')
@@ -71,7 +69,7 @@ def plot_semantic_structure(df_recalc, df_centroids, target_emotion, top_n=10):
     for i, label in enumerate(labels):
         color = 'red' if types[i] == "Reference" else '#1f77b4'
         plt.scatter(pos_2d[i, 0], pos_2d[i, 1], c=color, s=150, edgecolors='white')
-        plt.text(pos_2d[i, 0] + 0.1, pos_2d[i, 1] + 0.1, label, fontsize=10, color='black')  # <-- TESTO NERO
+        plt.text(pos_2d[i, 0] + 0.1, pos_2d[i, 1] + 0.1, label, fontsize=10, color='black')
 
     plt.title(f"Scatter Plot t-SNE: Vicinanza al Centroide '{target_emotion.capitalize()}'", color='black')
     plt.axis('off')
