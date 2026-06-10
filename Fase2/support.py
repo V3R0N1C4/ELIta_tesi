@@ -1,10 +1,13 @@
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
-import seaborn as sns
+from plotly.subplots import make_subplots
+import plotly.graph_objects as go
 from sklearn.manifold import TSNE
 from sklearn.metrics.pairwise import cosine_similarity
 from pathlib import Path
+
+from Fase1.emotion_config import BASIC_EMOTIONS, EMOTION_COLORS
 
 def plot_semantic_structure(df_recalc, df_centroids, target_emotion, top_n=10):
     """
@@ -34,13 +37,12 @@ def plot_semantic_structure(df_recalc, df_centroids, target_emotion, top_n=10):
 
     # Aggiungiamo archi se la similarità coseno è > 0.95 (regola molto stretta)
     # --- NUOVA LOGICA PER GLI ARCHI ---
-    sim_matrix = cosine_similarity(combined_vectors)
+    sim_matrix = cosine_similarity(combined_vectors)    # Calcola tutte le similarità coseno tra i nodi.
     for i in range(len(labels)):
         for j in range(i + 1, len(labels)):
             sim = sim_matrix[i, j]
 
-            # Regola 1: Se uno dei due nodi è il CENTROIDE, usiamo una soglia più bassa
-            # per mostrare il legame con le sue parole
+            # Regola 1: Se uno dei due nodi è il CENTROIDE, usiamo una soglia più bassa per mostrare il legame con le sue parole
             if labels[i].startswith("CENTROID") or labels[j].startswith("CENTROID"):
                 if sim > 0.95:  # Soglia più permissiva per il centroide
                     G.add_edge(labels[i], labels[j], weight=sim)
@@ -74,6 +76,35 @@ def plot_semantic_structure(df_recalc, df_centroids, target_emotion, top_n=10):
     plt.title(f"Scatter Plot t-SNE: Vicinanza al Centroide '{target_emotion.capitalize()}'", color='black')
     plt.axis('off')
     plt.show()
+
+
+def compare_pca_layouts(pca_list, titles):
+    """
+    Genera un grafico a subplot per confrontare i layout PCA dei diversi dataset (Originale, Ricalcolato).
+     - pca_list: Lista di dizionari con chiave 'df' che contiene il DataFrame con le colonne 'PC1', 'PC2' e 'Emozione Dominante'.
+     - titles: Lista di titoli per ogni subplot (es. ["Originale", "Ricalcolato", "Ibrido"]).
+    """
+    fig = make_subplots(rows=1, cols=len(pca_list), subplot_titles=titles, horizontal_spacing=0.05)
+
+    for i, pca_data in enumerate(pca_list):
+        df = pca_data['df']
+        for emo in BASIC_EMOTIONS:
+            emo_data = df[df['Emozione Dominante'] == emo]
+            fig.add_trace(
+                go.Scatter(
+                    x=emo_data['PC1'], y=emo_data['PC2'],
+                    mode='markers',
+                    marker=dict(color=EMOTION_COLORS[emo], size=5, opacity=0.6),
+                    name=emo,
+                    showlegend=(i == 0),  # Mostra legenda solo per il primo grafico
+                    legendgroup=emo
+                ),
+                row=1, col=i + 1
+            )
+
+    fig.update_layout(title_text="Confronto della compattezza degli spazi emotivi (Originale -> Ibrido)")
+    fig.show()
+
 
 def save_alpha_csvs(alpha_dataframes, output_dir=".", base_name="ELIta_ricalcolata_alpha", encoding="utf-8-sig"):
     """
