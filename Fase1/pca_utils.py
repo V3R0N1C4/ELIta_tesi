@@ -41,7 +41,7 @@ def perform_tsne_analysis(df, features_columns, dominant_emotions, perplexity=30
     Esegue t-SNE sui dati forniti.
     Args:
         perplexity (int): Parametro cruciale t-SNE.
-                          5-30 per dettagli locali, 30-50 per struttura globale.
+                          più alto è, più t-SNE cerca di preservare le relazioni globali, ma rischia di perdere i cluster locali
     """
     X = df[features_columns].fillna(0)
 
@@ -57,7 +57,7 @@ def perform_tsne_analysis(df, features_columns, dominant_emotions, perplexity=30
     tsne = TSNE(n_components=2, perplexity=perplexity, random_state=42, init='pca', learning_rate='auto')
     embedded = tsne.fit_transform(X_processed)
 
-    # Creazione DF (Usiamo nomi colonne compatibili con il visualizer esistente)
+    # Creazione DF per t-SNE
     tsne_df = pd.DataFrame(data=embedded, columns=['PC1', 'PC2'])
     tsne_df['Emoji'] = X.index
     tsne_df['Emozione Dominante'] = dominant_emotions.values
@@ -76,12 +76,10 @@ def perform_svd_analysis(df, features_columns, dominant_emotions, n_iter=7):
     """
     X = df[features_columns].fillna(0)
 
-    # SVD standard (senza scaling/centramento preventivo, altrimenti diventa PCA)
     svd = TruncatedSVD(n_components=2, n_iter=n_iter, random_state=42)
     components_transformed = svd.fit_transform(X)
 
-    # Creiamo il DataFrame
-    # Usiamo i nomi 'PC1' e 'PC2' per compatibilità con la funzione di visualizzazione esistente
+    # Creiamo il DataFrame per SVD
     svd_df = pd.DataFrame(data=components_transformed, columns=['PC1', 'PC2'])
     svd_df['Emoji'] = X.index
     svd_df['Emozione Dominante'] = dominant_emotions.values
@@ -96,8 +94,7 @@ def perform_svd_analysis(df, features_columns, dominant_emotions, n_iter=7):
 
 def trova_parole_complesse(df, soglia=0.4):
     """
-    Identifica le parole che hanno un punteggio superiore alla soglia
-    in almeno 2 emozioni diverse.
+    Identifica le parole che hanno un punteggio superiore alla soglia in almeno 2 emozioni diverse.
     """
     mask = df > soglia
     counts = mask.sum(axis=1)
