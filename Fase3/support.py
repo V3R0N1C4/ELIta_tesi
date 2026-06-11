@@ -1,32 +1,16 @@
 import pandas as pd
-import emoji
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+from Fase1.emotion_config import EMOTION_COLORS, BASIC_EMOTIONS
 
-# ── Costanti ───────────────────────────────────────────────────────────────────
-
-BASIC_EMOTIONS = ['gioia', 'tristezza', 'rabbia', 'paura',
-                  'disgusto', 'fiducia', 'sorpresa', 'aspettativa']
-SEVEN_EMOTIONS = ['gioia', 'tristezza', 'rabbia', 'paura',
-                  'disgusto', 'fiducia', 'sorpresa']
+# costanti
+SEVEN_EMOTIONS = ['gioia', 'tristezza', 'rabbia', 'paura', 'disgusto', 'fiducia', 'sorpresa']
 POSITIVE       = {'gioia', 'fiducia', 'sorpresa', 'aspettativa'}
 NEGATIVE       = {'tristezza', 'rabbia', 'paura', 'disgusto'}
-POS_FILTER     = {'ADJ', 'NOUN', 'VERB', 'EMOJI'}
+POS_FILTER     = {'ADJ', 'NOUN', 'VERB', 'EMOJI', 'AUX', 'ADV', 'INTJ', 'PRON'}
 
-EMOTION_COLORS = {
-    'gioia':        '#FDD835',
-    'tristezza':    '#1E88E5',
-    'rabbia':       '#E53935',
-    'paura':        '#43A047',
-    'disgusto':     '#8E24AA',
-    'fiducia':      '#81C784',
-    'sorpresa':     '#039BE5',
-    'aspettativa':  '#FB8C00',
-    'neutrale':     '#9E9E9E',
-}
 
-# ── Caricamento dati ───────────────────────────────────────────────────────────
-
+# caricamento csv
 def load_corpus(corpus_csv, tokens_csv):
     """Carica corpus e token con normalizzazione standard (lower/strip)."""
     df_corpus = pd.read_csv(corpus_csv)
@@ -34,7 +18,6 @@ def load_corpus(corpus_csv, tokens_csv):
     df_tokens['lemma'] = df_tokens['lemma'].astype(str).str.lower().str.strip()
     df_tokens['pos']   = df_tokens['pos'].astype(str).str.upper().str.strip()
     return df_corpus, df_tokens
-
 
 def load_elita_matrix(path, emotions=None):
     """Carica la matrice ELIta originale: normalizza l'indice."""
@@ -44,7 +27,6 @@ def load_elita_matrix(path, emotions=None):
     df.index = df.index.astype(str).str.lower().str.strip()
     return df[emotions].fillna(0)
 
-
 def load_recalc(path, emotions=None):
     """Carica una matrice ricalcolata (alpha) e normalizza l'indice."""
     if emotions is None:
@@ -52,7 +34,6 @@ def load_recalc(path, emotions=None):
     df = pd.read_csv(path, index_col=0)
     df.index = df.index.astype(str).str.lower().str.strip()
     return df[emotions].fillna(0)
-
 
 def load_all_matrices(elita_csv, alpha_02_csv, alpha_05_csv, alpha_08_csv):
     """Restituisce un dict ordinato con le 4 versioni del lessico ELIta."""
@@ -63,12 +44,12 @@ def load_all_matrices(elita_csv, alpha_02_csv, alpha_05_csv, alpha_08_csv):
         'Ibrido (α=0.8)':  load_recalc(alpha_08_csv),
     }
 
-# ── Analisi core ───────────────────────────────────────────────────────────────
 
+# analisi utilizzate
 def detect_emotions(df_corpus, df_tokens, df_elita, emotions=None):
     """
     Aggrega i punteggi ELIta per ogni documento (score grezzo).
-    Filtra solo POS in POS_FILTER (ADJ, NOUN, VERB).
+    Filtra solo POS in POS_FILTER (ADJ, NOUN, VERB, EMOJI).
     Restituisce un DataFrame con una riga per documento.
     """
     if emotions is None:
@@ -96,7 +77,6 @@ def detect_emotions(df_corpus, df_tokens, df_elita, emotions=None):
         })
     return pd.DataFrame(results)
 
-
 def apply_corpus_mean_norm(df_results, emotions=None):
     """
     Corpus_mean ItEm (Formula 3.5): divide ogni score per la media di corpus.
@@ -114,14 +94,12 @@ def apply_corpus_mean_norm(df_results, emotions=None):
     )
     return df_norm, mu
 
-
 def compute_mu_e(df_corpus, df_tokens, df_elita, emotions=None):
     """Calcola μ_e (media corpus per emozione) su tutto il corpus."""
     if emotions is None:
         emotions = BASIC_EMOTIONS
     df_raw = detect_emotions(df_corpus, df_tokens, df_elita, emotions)
     return df_raw[emotions].mean()
-
 
 def score_single_document(doc_id, tok_dict, elita_idx, df_elita, emotions=None):
     """Restituisce (vettore_grezzo, n_token_trovati) per un singolo documento."""
@@ -137,13 +115,11 @@ def score_single_document(doc_id, tok_dict, elita_idx, df_elita, emotions=None):
                 sc[e] += df_elita.loc[lemma, e]
     return sc, found
 
-
 def normalizza(sc, mu_e, emotions=None):
     """Applica corpus_mean normalisation (Formula 3.5 ItEm) a un singolo vettore."""
     if emotions is None:
         emotions = BASIC_EMOTIONS
     return {e: (sc[e] / mu_e[e] if mu_e[e] > 0 else 0.0) for e in emotions}
-
 
 def emozione_dominante(sc, emotions=None):
     """Restituisce l'emozione con score massimo, o 'neutrale' se tutto zero."""
@@ -154,8 +130,9 @@ def emozione_dominante(sc, emotions=None):
         return 'neutrale'
     return max((e for e in emotions), key=lambda e: sc[e])
 
-# ── Grafici ────────────────────────────────────────────────────────────────────
 
+
+# grafici
 def plot_emotion_bars(counts, total, title, emotions=None, colors=None, height=450):
     """Grafico a barre: distribuzione emozioni dominanti in percentuale."""
     if emotions is None:
@@ -174,23 +151,32 @@ def plot_emotion_bars(counts, total, title, emotions=None, colors=None, height=4
     fig.update_layout(title=title, barmode='group', height=height, showlegend=False)
     return fig
 
-
-def plot_emotion_grid(panels, total, title, emotions=None, colors=None, height=700):
+def plot_emotion_grid(panels, total, title, emotions=None, colors=None, height=None):
     """
-    Griglia 2×2 di grafici a barre.
-    panels: lista di tuple (label, df_results) — esattamente 4 elementi.
+    Griglia di grafici a barre: 1×2 per 2 pannelli, 2×2 per 3-4 pannelli.
+    panels: lista di tuple (label, df_results).
     """
     if emotions is None:
         emotions = BASIC_EMOTIONS
     if colors is None:
         colors = EMOTION_COLORS
+    n = len(panels)
+    if n <= 2:
+        rows, cols = 1, 2
+        positions  = [(1, 1), (1, 2)]
+        if height is None:
+            height = 400
+    else:
+        rows, cols = 2, 2
+        positions  = [(1, 1), (1, 2), (2, 1), (2, 2)]
+        if height is None:
+            height = 700
     fig = make_subplots(
-        rows=2, cols=2,
+        rows=rows, cols=cols,
         subplot_titles=[label for label, _ in panels],
         vertical_spacing=0.18,
         horizontal_spacing=0.08,
     )
-    positions = [(1, 1), (1, 2), (2, 1), (2, 2)]
     for idx, (_, df_r) in enumerate(panels):
         counts = df_r['dominant_emotion'].value_counts()
         r, c   = positions[idx]
@@ -205,7 +191,6 @@ def plot_emotion_grid(panels, total, title, emotions=None, colors=None, height=7
             ), row=r, col=c)
     fig.update_layout(title=title, barmode='group', height=height)
     return fig
-
 
 def plot_radar_single(sc_norm, emo_dominant, title, emotions=None, colors=None, height=480):
     """Grafico radar per un singolo profilo emotivo."""
@@ -228,7 +213,6 @@ def plot_radar_single(sc_norm, emo_dominant, title, emotions=None, colors=None, 
         height=height,
     )
     return fig
-
 
 def plot_radar_comparison(traces_data, title, emotions=None, height=520):
     """
@@ -255,7 +239,6 @@ def plot_radar_comparison(traces_data, title, emotions=None, height=520):
         height=height,
     )
     return fig
-
 
 def plot_raw_vs_norm_bars(totals, sc_norm, doc_id, emotions=None, colors=None, height=450):
     """Grafico affiancato: score grezzo vs corpus_mean normalizzato per un documento."""
