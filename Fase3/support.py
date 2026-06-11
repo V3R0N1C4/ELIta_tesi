@@ -19,18 +19,7 @@ def load_corpus(corpus_csv, tokens_csv):
     df_tokens['pos']   = df_tokens['pos'].astype(str).str.upper().str.strip()
     return df_corpus, df_tokens
 
-def load_elita_matrix(path, emotions=None):
-    """Carica la matrice ELIta originale: normalizza l'indice."""
-    if emotions is None:
-        emotions = BASIC_EMOTIONS
-    df = pd.read_csv(path, index_col=0)
-    df.index = df.index.astype(str).str.lower().str.strip()
-    return df[emotions].fillna(0)
-
-def load_recalc(path, emotions=None):
-    """Carica una matrice ricalcolata (alpha) e normalizza l'indice."""
-    if emotions is None:
-        emotions = BASIC_EMOTIONS
+def load_elita_matrix(path, emotions=BASIC_EMOTIONS):
     df = pd.read_csv(path, index_col=0)
     df.index = df.index.astype(str).str.lower().str.strip()
     return df[emotions].fillna(0)
@@ -39,21 +28,19 @@ def load_all_matrices(elita_csv, alpha_02_csv, alpha_05_csv, alpha_08_csv):
     """Restituisce un dict ordinato con le 4 versioni del lessico ELIta."""
     return {
         'Originale (α=0)': load_elita_matrix(elita_csv),
-        'Ibrido (α=0.2)':  load_recalc(alpha_02_csv),
-        'Ibrido (α=0.5)':  load_recalc(alpha_05_csv),
-        'Ibrido (α=0.8)':  load_recalc(alpha_08_csv),
+        'Ibrido (α=0.2)':  load_elita_matrix(alpha_02_csv),
+        'Ibrido (α=0.5)':  load_elita_matrix(alpha_05_csv),
+        'Ibrido (α=0.8)':  load_elita_matrix(alpha_08_csv),
     }
 
 
-# analisi utilizzate
-def detect_emotions(df_corpus, df_tokens, df_elita, emotions=None):
+# analisi
+def detect_emotions(df_corpus, df_tokens, df_elita, emotions=BASIC_EMOTIONS):
     """
     Aggrega i punteggi ELIta per ogni documento (score grezzo).
     Filtra solo POS in POS_FILTER (ADJ, NOUN, VERB, EMOJI).
     Restituisce un DataFrame con una riga per documento.
     """
-    if emotions is None:
-        emotions = BASIC_EMOTIONS
     df_f    = df_tokens[df_tokens['pos'].isin(POS_FILTER)].copy()
     eidx    = set(df_elita.index)
     tok     = df_f.groupby('doc_id')['lemma'].apply(list).to_dict()
@@ -77,13 +64,8 @@ def detect_emotions(df_corpus, df_tokens, df_elita, emotions=None):
         })
     return pd.DataFrame(results)
 
-def apply_corpus_mean_norm(df_results, emotions=None):
-    """
-    Corpus_mean ItEm (Formula 3.5): divide ogni score per la media di corpus.
-    Restituisce (df_normalizzato, mu_e).
-    """
-    if emotions is None:
-        emotions = BASIC_EMOTIONS
+def apply_corpus_mean_norm(df_results, emotions=BASIC_EMOTIONS):
+    """Corpus_mean ItEm (Formula 3.5): divide ogni score per la media di corpus"""
     mu      = df_results[emotions].mean()
     df_norm = df_results.copy()
     for e in emotions:
@@ -94,17 +76,12 @@ def apply_corpus_mean_norm(df_results, emotions=None):
     )
     return df_norm, mu
 
-def compute_mu_e(df_corpus, df_tokens, df_elita, emotions=None):
-    """Calcola μ_e (media corpus per emozione) su tutto il corpus."""
-    if emotions is None:
-        emotions = BASIC_EMOTIONS
+def compute_mu_e(df_corpus, df_tokens, df_elita, emotions=BASIC_EMOTIONS):
     df_raw = detect_emotions(df_corpus, df_tokens, df_elita, emotions)
     return df_raw[emotions].mean()
 
-def score_single_document(doc_id, tok_dict, elita_idx, df_elita, emotions=None):
-    """Restituisce (vettore_grezzo, n_token_trovati) per un singolo documento."""
-    if emotions is None:
-        emotions = BASIC_EMOTIONS
+def score_single_document(doc_id, tok_dict, elita_idx, df_elita, emotions=BASIC_EMOTIONS):
+    """Restituisce (vettore_grezzo, n_token_trovati) per un singolo documento"""
     lemmi = tok_dict.get(doc_id, [])
     sc    = {e: 0.0 for e in emotions}
     found = 0
@@ -115,30 +92,20 @@ def score_single_document(doc_id, tok_dict, elita_idx, df_elita, emotions=None):
                 sc[e] += df_elita.loc[lemma, e]
     return sc, found
 
-def normalizza(sc, mu_e, emotions=None):
-    """Applica corpus_mean normalisation (Formula 3.5 ItEm) a un singolo vettore."""
-    if emotions is None:
-        emotions = BASIC_EMOTIONS
+def normalizza(sc, mu_e, emotions=BASIC_EMOTIONS):
+    """Corpus_mean normalisation"""
     return {e: (sc[e] / mu_e[e] if mu_e[e] > 0 else 0.0) for e in emotions}
 
-def emozione_dominante(sc, emotions=None):
-    """Restituisce l'emozione con score massimo, o 'neutrale' se tutto zero."""
-    if emotions is None:
-        emotions = BASIC_EMOTIONS
-    total = sum(sc[e] for e in emotions)
-    if total == 0:
+def emozione_dominante(sc, emotions=BASIC_EMOTIONS):
+    """Restituisce l'emozione con score massimo, o neutrale se tutto zero"""
+    if sum(sc[e] for e in emotions) == 0:
         return 'neutrale'
-    return max((e for e in emotions), key=lambda e: sc[e])
-
+    return max(emotions, key=lambda e: sc[e])
 
 
 # grafici
-def plot_emotion_bars(counts, total, title, emotions=None, colors=None, height=450):
-    """Grafico a barre: distribuzione emozioni dominanti in percentuale."""
-    if emotions is None:
-        emotions = BASIC_EMOTIONS
-    if colors is None:
-        colors = EMOTION_COLORS
+def plot_emotion_bars(counts, total, title, emotions=BASIC_EMOTIONS, colors=EMOTION_COLORS, height=450):
+    """grafico a barre: distribuzione emozioni dominanti in percentuale"""
     fig = go.Figure()
     for e in emotions + ['neutrale']:
         n = counts.get(e, 0)
@@ -151,26 +118,20 @@ def plot_emotion_bars(counts, total, title, emotions=None, colors=None, height=4
     fig.update_layout(title=title, barmode='group', height=height, showlegend=False)
     return fig
 
-def plot_emotion_grid(panels, total, title, emotions=None, colors=None, height=None):
+def plot_emotion_grid(panels, total, title, emotions=BASIC_EMOTIONS, colors=EMOTION_COLORS, height=None):
     """
-    Griglia di grafici a barre: 1×2 per 2 pannelli, 2×2 per 3-4 pannelli.
-    panels: lista di tuple (label, df_results).
+    Griglia a barre: 1×2 o 2×2
+    panels: lista di (label, df_results)
     """
-    if emotions is None:
-        emotions = BASIC_EMOTIONS
-    if colors is None:
-        colors = EMOTION_COLORS
     n = len(panels)
     if n <= 2:
         rows, cols = 1, 2
-        positions  = [(1, 1), (1, 2)]
-        if height is None:
-            height = 400
+        positions = [(1, 1), (1, 2)]
+        height = height or 400
     else:
         rows, cols = 2, 2
-        positions  = [(1, 1), (1, 2), (2, 1), (2, 2)]
-        if height is None:
-            height = 700
+        positions = [(1, 1), (1, 2), (2, 1), (2, 2)]
+        height = height or 700
     fig = make_subplots(
         rows=rows, cols=cols,
         subplot_titles=[label for label, _ in panels],
@@ -192,12 +153,7 @@ def plot_emotion_grid(panels, total, title, emotions=None, colors=None, height=N
     fig.update_layout(title=title, barmode='group', height=height)
     return fig
 
-def plot_radar_single(sc_norm, emo_dominant, title, emotions=None, colors=None, height=480):
-    """Grafico radar per un singolo profilo emotivo."""
-    if emotions is None:
-        emotions = BASIC_EMOTIONS
-    if colors is None:
-        colors = EMOTION_COLORS
+def plot_radar_single(sc_norm, emo_dominant, title, emotions=BASIC_EMOTIONS, colors=EMOTION_COLORS, height=480):
     emos_loop = emotions + [emotions[0]]
     fig = go.Figure(go.Scatterpolar(
         r=[sc_norm[e] for e in emos_loop],
@@ -214,13 +170,11 @@ def plot_radar_single(sc_norm, emo_dominant, title, emotions=None, colors=None, 
     )
     return fig
 
-def plot_radar_comparison(traces_data, title, emotions=None, height=520):
+def plot_radar_comparison(traces_data, title, emotions=BASIC_EMOTIONS, height=520):
     """
     Radar con tracce sovrapposte.
     traces_data: lista di (label, sc_norm, color, opacity, line_dash).
     """
-    if emotions is None:
-        emotions = BASIC_EMOTIONS
     emos_loop = emotions + [emotions[0]]
     fig = go.Figure()
     for label, sc, color, opacity, dash in traces_data:
@@ -240,12 +194,7 @@ def plot_radar_comparison(traces_data, title, emotions=None, height=520):
     )
     return fig
 
-def plot_raw_vs_norm_bars(totals, sc_norm, doc_id, emotions=None, colors=None, height=450):
-    """Grafico affiancato: score grezzo vs corpus_mean normalizzato per un documento."""
-    if emotions is None:
-        emotions = BASIC_EMOTIONS
-    if colors is None:
-        colors = EMOTION_COLORS
+def plot_raw_vs_norm_bars(totals, sc_norm, doc_id, emotions=BASIC_EMOTIONS, colors=EMOTION_COLORS, height=450):
     bar_colors = [colors.get(e, '#999') for e in emotions]
     fig = make_subplots(
         rows=1, cols=2,
