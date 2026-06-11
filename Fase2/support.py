@@ -30,7 +30,7 @@ def plot_semantic_structure(df_recalc, df_centroids, target_emotion, top_n=10):
     tsne = TSNE(n_components=2, perplexity=min(10, len(labels) - 1), random_state=42, init='pca')
     pos_2d = tsne.fit_transform(combined_vectors)
 
-    # RAFICO 1: MAPPA SEMANTICA (NETWORK) ---
+    # GRAFICO 1: MAPPA SEMANTICA (NETWORK)
     G = nx.Graph()
     for i, label in enumerate(labels):
         G.add_node(label, pos=pos_2d[i], type=types[i])
@@ -59,7 +59,7 @@ def plot_semantic_structure(df_recalc, df_centroids, target_emotion, top_n=10):
     plt.title(f"Mappa Semantica: Struttura di '{target_emotion.capitalize()}' (Ricalcolata)")
     plt.show()
 
-    # GRAFICO 2: SCATTER PLOT (t-SNE) con sfondo ---
+    # GRAFICO 2: SCATTER PLOT (t-SNE)
     plt.figure(figsize=(10, 8))
     ax2 = plt.gca()
     ax2.set_facecolor('white')
