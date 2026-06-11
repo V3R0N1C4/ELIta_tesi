@@ -1,13 +1,8 @@
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import numpy as np
-
-try:
-    from .sklearn_utils import perform_pca_analysis, perform_svd_analysis, trova_parole_complesse
-    from .emotion_config import EMOTION_COLORS, BASIC_EMOTIONS
-except ImportError:
-    from sklearn_utils import  perform_pca_analysis, perform_svd_analysis, trova_parole_complesse
-    from emotion_config import EMOTION_COLORS, BASIC_EMOTIONS
+from sklearn_utils import  perform_pca_analysis, perform_svd_analysis, trova_parole_complesse
+from emotion_config import EMOTION_COLORS, BASIC_EMOTIONS
 
 def plot_pca_emotions(pca_data, colors_dict, title, plot_loadings=False, feature_names=None):
     """

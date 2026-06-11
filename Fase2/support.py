@@ -13,7 +13,7 @@ def plot_semantic_structure(df_recalc, df_centroids, target_emotion, top_n=10):
     """
     Genera i due grafici (Network e Scatter) basati sui punteggi ricalcolati.
     """
-    # 1. Seleziona le parole più rappresentative per l'emozione target
+    # Seleziona le parole più rappresentative per l'emozione target
     # (Prende le top N parole basandosi sul punteggio ricalcolato)
     top_words = df_recalc[target_emotion].sort_values(ascending=False).head(top_n * 3).index
 
@@ -25,12 +25,12 @@ def plot_semantic_structure(df_recalc, df_centroids, target_emotion, top_n=10):
     labels = [f"CENTROID_{target_emotion.upper()}"] + list(top_words)
     types = ["Reference"] + ["Word"] * len(top_words)
 
-    # 2. Riduzione dimensionale t-SNE
+    # Riduzione dimensionale t-SNE
     # perplexity bassa perché abbiamo pochi punti
     tsne = TSNE(n_components=2, perplexity=min(10, len(labels) - 1), random_state=42, init='pca')
     pos_2d = tsne.fit_transform(combined_vectors)
 
-    # --- GRAFICO 1: MAPPA SEMANTICA (NETWORK) ---
+    # RAFICO 1: MAPPA SEMANTICA (NETWORK) ---
     G = nx.Graph()
     for i, label in enumerate(labels):
         G.add_node(label, pos=pos_2d[i], type=types[i])
@@ -59,7 +59,7 @@ def plot_semantic_structure(df_recalc, df_centroids, target_emotion, top_n=10):
     plt.title(f"Mappa Semantica: Struttura di '{target_emotion.capitalize()}' (Ricalcolata)")
     plt.show()
 
-    # --- GRAFICO 2: SCATTER PLOT (t-SNE) con sfondo ---
+    # GRAFICO 2: SCATTER PLOT (t-SNE) con sfondo ---
     plt.figure(figsize=(10, 8))
     ax2 = plt.gca()
     ax2.set_facecolor('white')
