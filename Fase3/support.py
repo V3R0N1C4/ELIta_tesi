@@ -7,7 +7,7 @@ from Fase1.emotion_config import EMOTION_COLORS, BASIC_EMOTIONS
 SEVEN_EMOTIONS = ['gioia', 'tristezza', 'rabbia', 'paura', 'disgusto', 'fiducia', 'sorpresa']
 POSITIVE       = {'gioia', 'fiducia', 'sorpresa', 'aspettativa'}
 NEGATIVE       = {'tristezza', 'rabbia', 'paura', 'disgusto'}
-POS_FILTER     = {'ADJ', 'NOUN', 'VERB', 'EMOJI', 'AUX', 'ADV', 'INTJ', 'PRON'}
+POS_FILTER     = {'NOUN', 'VERB', 'ADJ', 'ADV', 'EMOJI', 'PRONP', 'PRON', 'ADP', 'AUX', 'X'}
 
 
 # caricamento csv
