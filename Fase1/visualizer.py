@@ -18,13 +18,13 @@ def plot_pca_emotions(pca_data, colors_dict, title, plot_loadings=False, feature
         horizontal_spacing=0.12
     )
 
-    # Iteriamo sui colori disponibili
+    # Iterazione sui colori disponibili
     for emotion, color in colors_dict.items():
         emotion_data = df[df['Emozione Dominante'] == emotion]
         if emotion_data.empty:
             continue
 
-        # 1. Grafico Emoji (Sinistra)
+        # 1. Grafico Emoji (SX)
         fig.add_trace(
             go.Scatter(
                 x=emotion_data['PC1'], y=emotion_data['PC2'],
@@ -38,7 +38,7 @@ def plot_pca_emotions(pca_data, colors_dict, title, plot_loadings=False, feature
             ), row=1, col=1
         )
 
-        # 2. Grafico Marker (Destra)
+        # 2. Grafico Marker (DX)
         fig.add_trace(
             go.Scatter(
                 x=emotion_data['PC1'], y=emotion_data['PC2'],

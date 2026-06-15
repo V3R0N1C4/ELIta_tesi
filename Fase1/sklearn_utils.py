@@ -96,7 +96,7 @@ def trova_parole_complesse(df, soglia=0.4):
     """
     Identifica le parole che hanno un punteggio superiore alla soglia in almeno 2 emozioni diverse.
     """
-    mask = df > soglia
-    counts = mask.sum(axis=1)
-    complex_words = df[counts >= 2].copy()
+    mask = df > soglia                      # True/False per ogni cella
+    counts = mask.sum(axis=1)               # quante emozioni superano la soglia per ogni parola
+    complex_words = df[counts >= 2].copy()  # tieni solo le parole con almeno 2 emozioni forti
     return complex_words
