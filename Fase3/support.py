@@ -5,8 +5,9 @@ from Fase1.emotion_config import EMOTION_COLORS, BASIC_EMOTIONS
 
 # costanti
 SEVEN_EMOTIONS = ['gioia', 'tristezza', 'rabbia', 'paura', 'disgusto', 'fiducia', 'sorpresa']
-POSITIVE       = {'gioia', 'fiducia', 'sorpresa', 'aspettativa'}
+POSITIVE       = {'gioia', 'fiducia'}
 NEGATIVE       = {'tristezza', 'rabbia', 'paura', 'disgusto'}
+AMBIVALENT     = {'sorpresa', 'aspettativa'}
 POS_FILTER     = {'NOUN', 'VERB', 'ADJ', 'ADV', 'EMOJI', 'PRONP', 'PRON', 'ADP', 'AUX', 'X'}
 
 
