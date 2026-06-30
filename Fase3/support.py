@@ -8,7 +8,7 @@ SEVEN_EMOTIONS = ['gioia', 'tristezza', 'rabbia', 'paura', 'disgusto', 'fiducia'
 POSITIVE       = {'gioia', 'fiducia'}
 NEGATIVE       = {'tristezza', 'rabbia', 'paura', 'disgusto'}
 AMBIVALENT     = {'sorpresa', 'aspettativa'}
-POS_FILTER     = {'NOUN', 'VERB', 'ADJ', 'ADV', 'EMOJI', 'PRONP', 'PRON', 'ADP', 'AUX', 'X'}
+POS_FILTER     = {'NOUN', 'VERB', 'ADJ', 'ADV', 'EMOJI', 'PRONP', 'PRON', 'ADP', 'AUX', 'X', 'DET', 'SCONJ', 'NUM', 'PUNCT'}
 
 
 # caricamento csv
